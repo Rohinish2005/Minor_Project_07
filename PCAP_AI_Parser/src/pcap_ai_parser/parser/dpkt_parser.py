@@ -235,8 +235,8 @@ class DpktParser:
         rec.src_ip = _ip4_to_str(ip.src)
         rec.dst_ip = _ip4_to_str(ip.dst)
         rec.ttl = ip.ttl
-        rec.ip_flags = ip.off >> 13
-        rec.ip_frag_offset = ip.off & 0x1FFF
+        rec.ip_flags = (ip.rf << 2) | (ip.df << 1) | ip.mf
+        rec.ip_frag_offset = ip.offset
         rec.wire_length = ip.len
 
         self._parse_transport(ip, rec)
@@ -261,8 +261,10 @@ class DpktParser:
             rec.tcp_seq = data.seq
             rec.tcp_ack = data.ack
             rec.tcp_window = data.win
-            rec.payload_length = len(data.data)
-            rec.payload_preview = bytes(data.data[:64])
+            raw_payload = bytes(data.data) if data.data else b""
+            rec.payload = raw_payload
+            rec.payload_length = len(raw_payload)
+            rec.payload_preview = raw_payload[:64]
             rec.app_proto = _guess_app_proto(data.sport, data.dport)
 
         elif isinstance(data, dpkt.udp.UDP):
@@ -270,14 +272,22 @@ class DpktParser:
             rec.src_port = data.sport
             rec.dst_port = data.dport
             rec.udp_length = data.ulen
-            rec.payload_length = len(data.data)
-            rec.payload_preview = bytes(data.data[:64])
+            raw_payload = bytes(data.data) if data.data else b""
+            rec.payload = raw_payload
+            rec.payload_length = len(raw_payload)
+            rec.payload_preview = raw_payload[:64]
             rec.app_proto = _guess_app_proto(data.sport, data.dport)
 
         elif isinstance(data, dpkt.icmp.ICMP):
             rec.transport_proto = "ICMP"
             rec.icmp_type = data.type
             rec.icmp_code = data.code
+            if hasattr(data, "data") and data.data:
+                icmp_inner = getattr(data.data, "data", data.data)
+                raw_payload = bytes(icmp_inner) if isinstance(icmp_inner, (bytes, bytearray)) else b""
+                rec.payload = raw_payload
+                rec.payload_length = len(raw_payload)
+                rec.payload_preview = raw_payload[:64]
 
         elif isinstance(data, dpkt.icmp6.ICMP6):
             rec.transport_proto = "ICMPv6"
