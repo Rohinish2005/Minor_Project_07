@@ -35,6 +35,7 @@ Thumbs.db
 # Project outputs
 output/
 data/samples/*.pcap
+!data/samples/sample.pcap
 
 # Secrets
 .env
