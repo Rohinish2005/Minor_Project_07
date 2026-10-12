@@ -89,13 +89,13 @@ Verifies Python version, all required libraries, and tshark availability.
 
 ```powershell
 uv run pcap-parse parse data/samples/sample.pcap
-uv run pcap-parse parse capture.pcap --backend tshark
-uv run pcap-parse parse capture.pcap --max-packets 100 --output packets.csv
+uv run pcap-parse parse data/samples/sample.pcap --backend tshark
+uv run pcap-parse parse data/samples/sample.pcap --max-packets 50 --output packets.csv
 ```
 
 | Flag | Default | Description |
 |------|---------|-------------|
-| `--backend` | `dpkt` | Parsing engine: `dpkt` (fast) or `tshark` (deep DPI) |
+| `--backend` | `dpkt` | Parsing engine: `dpkt` (fast, no install needed) or `tshark` (deep DPI, requires Wireshark) |
 | `--max-packets` / `-n` | `0` (all) | Stop after N packets |
 | `--output` / `-o` | — | Save parsed records to CSV |
 | `--no-summary` | — | Skip summary statistics table |
@@ -136,7 +136,7 @@ Displays for the chosen packet:
 
 ```powershell
 uv run pcap-parse triage data/samples/sample.pcap
-uv run pcap-parse triage capture.pcap --min-score 30
+uv run pcap-parse triage data/samples/sample.pcap --min-score 30
 ```
 
 Scans every packet and prints:
@@ -157,7 +157,7 @@ Scans every packet and prints:
 uv run pcap-parse report data/samples/sample.pcap --pdf --json
 
 # PDF only, custom output directory
-uv run pcap-parse report capture.pcap --pdf --output-dir reports/
+uv run pcap-parse report data/samples/sample.pcap --pdf --output-dir reports/
 ```
 
 Outputs files to `output/` (or `--output-dir`):
